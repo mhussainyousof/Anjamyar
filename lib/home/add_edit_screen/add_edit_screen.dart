@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
 import 'package:todolist/config/mange_theme.dart';
+import 'package:todolist/data/repo/repository.dart';
 import 'package:todolist/home/home.dart';
 
 import '../../main.dart';
@@ -63,13 +64,8 @@ late final TextEditingController _controller = TextEditingController(text: widge
         
           widget.task.name = _controller.text;
          widget.task.priority = widget.task.priority ?? Priority.low;
-
-          if (widget.task.isInBox) {
-            widget.task.save();
-          } else {
-            final Box<Task> box = Hive.box(boxName);
-            box.add(widget.task);
-          }
+       final repository = Provider.of<Repository<Task>>(context, listen: false);
+       repository.createOrUpdate(widget.task);
           Navigator.of(context).pop();
         },
         label: const Text('Save Changes'),

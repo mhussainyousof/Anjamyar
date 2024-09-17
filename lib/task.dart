@@ -4,6 +4,7 @@ part 'task.g.dart';
 
 @HiveType(typeId: 0)
 class Task extends HiveObject {
+  int id = -1;
   @HiveField(1)
   String name = '';
   @HiveField(2)

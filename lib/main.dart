@@ -4,6 +4,8 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:todolist/config/mange_theme.dart';
 import 'package:todolist/config/theme.dart';
+import 'package:todolist/data/repo/repository.dart';
+import 'package:todolist/data/repo/source/hive_task_source.dart';
 import 'package:todolist/home/add_edit_screen/add_edit_screen.dart';
 import 'package:todolist/home/home.dart';
 import 'package:todolist/task.dart';
@@ -21,7 +23,9 @@ void main() async {
   runApp(
     ChangeNotifierProvider(
     create: (_) => ThemeProvider(),
-    child: const MyApp(),
+    child: ChangeNotifierProvider<Repository<Task>>(
+      create: (context)=>Repository<Task>(HiveTaskDataSource(Hive.box(boxName))),
+      child: const MyApp()),
     )
     );
 }
