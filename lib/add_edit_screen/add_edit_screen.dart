@@ -1,13 +1,8 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
-import 'package:todolist/config/mange_theme.dart';
 import 'package:todolist/data/repo/repository.dart';
-import 'package:todolist/home/home.dart';
-
-import '../../main.dart';
-import '../../task.dart';
+import '../task.dart';
 
 class AddEditScreen extends StatefulWidget {
     final Task task;
@@ -22,7 +17,7 @@ late final TextEditingController _controller = TextEditingController(text: widge
 
   @override
   Widget build(BuildContext context) {
-    final themeProvider = Provider.of<ThemeProvider>(context);
+    // final themeProvider = Provider.of<ThemeProvider>(context);
     final ThemeData themeData = Theme.of(context);
     return Scaffold(
       backgroundColor: themeData.colorScheme.surface,
@@ -61,11 +56,11 @@ late final TextEditingController _controller = TextEditingController(text: widge
         // foregroundColor: themeData.colorScheme.onPrimary,
 
         onPressed: () {
-        
+
           widget.task.name = _controller.text;
          widget.task.priority = widget.task.priority ?? Priority.low;
-       final repository = Provider.of<Repository<Task>>(context, listen: false);
-       repository.createOrUpdate(widget.task);
+          final repository = Provider.of<Repository<Task>>(context, listen: false);
+          repository.updateOrCreate(widget.task);
           Navigator.of(context).pop();
         },
         label: const Text('Save Changes'),
@@ -127,7 +122,7 @@ late final TextEditingController _controller = TextEditingController(text: widge
               maxLines: 3,
               controller: _controller,
               decoration: InputDecoration(
-                
+
                 // filled: true,
                 fillColor: themeData.colorScheme.surface,
                 border: OutlineInputBorder(

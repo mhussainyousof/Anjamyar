@@ -1,27 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:todolist/add_edit_screen/add_edit_screen.dart';
 import 'package:todolist/data/repo/repository.dart';
-import 'package:todolist/home/add_edit_screen/add_edit_screen.dart';
 import 'package:todolist/home/bloc/task_list_bloc.dart';
-import 'package:todolist/main.dart';
 import '../config/mange_theme.dart';
 import '../task.dart';
 
 class HomeScreen extends StatelessWidget {
   final TextEditingController controller = TextEditingController();
-  final ValueNotifier<String> searchKeywordNotifier = ValueNotifier('');
-  HomeScreen({super.key});
+  final ValueNotifier<String>searchKeywordNotifier = ValueNotifier('');
+   HomeScreen({super.key});
   @override
   Widget build(BuildContext context) {
     final ThemeData themeData = Theme.of(context);
     final themeProvider = Provider.of<ThemeProvider>(context);
-    // final box = Hive.box<Task>(boxName);//! no Accessibility
-
+    // final box = Hive.box<Task>(boxName);
+    //    box.values.toList().asMap().forEach((index, task) {
+    //   if (task.priority == null) {
+    //     box.deleteAt(index); // حذف تسک
+    //   }
+    // });
     return BlocProvider<TaskListBloc>(
-      create: (context)=> TaskListBloc(context.read<Repository<Task>>()),
-
+      create:(context)=>TaskListBloc(context.read<Repository<Task>>()),
       child: Scaffold(
         appBar: AppBar(
           toolbarHeight: 100,
@@ -36,7 +37,6 @@ class HomeScreen extends StatelessWidget {
                     onChanged: (value) {
                       themeProvider.toggleThemeMode(value);
                     },
-      
                     activeColor: Theme.of(context)
                         .colorScheme
                         .primary, // Color of the switch in active mode
@@ -64,23 +64,26 @@ class HomeScreen extends StatelessWidget {
                 ],
               ),
               // const SizedBox(height: 2),
-              SizedBox(
-                height: 40, // ارتفاع موردنظر
-                child: TextField(
-                  onChanged: (value) {
-                    context.read<TaskListBloc>().add(TaskListSearch(query: value));
-                  },
-                  controller: controller,
-                  decoration: const InputDecoration(
-                    labelText: 'search here...',
-                    prefixIcon: Padding(
-                      padding: EdgeInsets.only(top: 6), // تنظیم padding آیکون
-                      child: Icon(Icons.search, size: 20),
-                    ),
-                    contentPadding: EdgeInsets.symmetric(
-                        vertical: 0.0), // اینجا padding عمودی را صفر می‌گذاریم
-                  ),
-                ),
+                Builder(
+                builder: (context) {
+                  return SizedBox(
+                     height: 40,
+                     child: TextField(
+                               onChanged: (value){
+                                context.read<TaskListBloc >().add(TaskListSearch(value));
+                               },
+                               controller:controller ,
+                               decoration: const InputDecoration(
+                           labelText: 'search here...',
+                           prefixIcon: Padding(
+                             padding: EdgeInsets.only(top: 6), // تنظیم padding آیکون
+                             child: Icon(Icons.search, size: 20),
+                           ),
+                                 contentPadding: EdgeInsets.symmetric(vertical: 0.0), // اینجا padding عمودی را صفر می‌گذاریم
+                               ),
+                           ),
+                   );
+                }
               ),
             ],
           ),
@@ -104,27 +107,30 @@ class HomeScreen extends StatelessWidget {
         ),
         body: Column(
           children: [
-            Expanded(child: Consumer<Repository<Task>>(
-              builder: (context, model, child){
-                context.read<TaskListBloc>().add(TaskListStarted()); 
-              return  BlocBuilder<TaskListBloc, TaskListState>(
-                  builder: (context, state) {
-                    
-                if (state is TaskListLoaded) {
-                  return TaskListView(items: state.items, themeData: themeData);
-                } else if (state is TaskListEmpty) {
-                  return EmptyState();
-                } else if (state is TaskListLoading ||state is TaskListInitial) {
-                  return Center(child: CircularProgressIndicator());
-                } else if (state is TaskListError) {
-                  return Center(
-                    child: Text(state.errorMessage),
-                  );
-                }else{
-                  throw Exception('state is not a task list');
-                }
-              });},
-            )),
+           
+            Expanded(
+              child: Consumer<Repository<Task>>(
+                builder:(context, value, child) {
+                  context.read<TaskListBloc>().add(TaskListStarted());
+                  return BlocBuilder<TaskListBloc, TaskListState>(builder:(context, state) {
+                  
+                  if(state is TaskListSuccess){
+                   return ListViewWidget(items: state.items, themeData: themeData);
+                  }else if(state is TaskListLoading || state is TaskListInitial){
+                   return  Center(child: CircularProgressIndicator(),);
+                  }else if(state is TaskListEmpty){
+                    return EmptyState();
+                  }else if(state is TaskListError){
+                  return Center(child: 
+                    Text(state.errorMessage),);
+                  }
+                  else{
+                    throw Exception('statte is not found');
+                  }
+                },);
+                },
+              )
+            ),
           ],
         ),
       ),
@@ -132,8 +138,8 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-class TaskListView extends StatelessWidget {
-  const TaskListView({
+class ListViewWidget extends StatelessWidget {
+  const ListViewWidget({
     super.key,
     required this.items,
     required this.themeData,
@@ -145,68 +151,76 @@ class TaskListView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      padding: const EdgeInsets.fromLTRB(12, 12, 12, 100),
-      itemCount: items.length + 1,
-      itemBuilder: (context, index) {
-        if (index == 0) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+    padding: const EdgeInsets.fromLTRB(12, 12, 12, 100),
+    itemCount: items.length + 1,
+    itemBuilder: (context, index) {
+      if (index == 0) {
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Today',
+                      style: themeData.textTheme.bodyLarge),
+                  Container(
+                    width: 50,
+                    height: 3,
+                    margin: const EdgeInsets.only(top: 2),
+                    decoration: BoxDecoration(
+                      color:
+                          Theme.of(context).colorScheme.primary,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ],
+              ),
+              MaterialButton(
+                padding: const EdgeInsets.all(7.0),
+                height: 15,
+                elevation: 0,
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(
+                      12), // Rounded corners
+                ),
+                onPressed: () {
+                context.read<TaskListBloc>().add(TaskListDeletAll());
+                },
+                child: Row(
                   children: [
-                    Text('Today', style: themeData.textTheme.bodyLarge),
-                    Container(
-                      width: 50,
-                      height: 3,
-                      margin: const EdgeInsets.only(top: 2),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary,
-                        borderRadius: BorderRadius.circular(2),
+                    Text(
+                      'Delete All',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: themeData
+                            .colorScheme
+                            .onPrimary
+                            .withOpacity(
+                                0.6), // Improved text color
                       ),
                     ),
+                    const SizedBox(width: 3),
+                    Icon(Icons.delete,
+                        color: themeData
+                            .colorScheme
+                            .onPrimary
+                            .withOpacity(0.6),
+                        size: 17), // Improved icon color
                   ],
                 ),
-                MaterialButton(
-                  padding: const EdgeInsets.all(7.0),
-                  height: 15,
-                  elevation: 0,
-                  color: Theme.of(context).colorScheme.primary.withOpacity(0.8),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12), // Rounded corners
-                  ),
-                  onPressed: () {
-                  context.read<TaskListBloc>().add(TaskListDeleteAll());
-                  },
-                  child: Row(
-                    children: [
-                      Text(
-                        'Delete All',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: themeData.colorScheme.onPrimary
-                              .withOpacity(0.6), // Improved text color
-                        ),
-                      ),
-                      const SizedBox(width: 3),
-                      Icon(Icons.delete,
-                          color:
-                              themeData.colorScheme.onPrimary.withOpacity(0.6),
-                          size: 17), // Improved icon color
-                    ],
-                  ),
-                )
-              ],
-            ),
-          );
-        } else {
-          final Task task = items[index - 1];
-          return TaskItem(task: task);
-        }
-      },
-    );
+              )
+            ],
+          ),
+        );
+      } else {
+        final Task task =items[index - 1];
+        return TaskItem(task: task);
+      }
+    },
+                      );
   }
 }
 
@@ -232,7 +246,7 @@ class _TaskItemState extends State<TaskItem> {
         break;
       case Priority.high:
         priorityColor = const Color(0xFFD32F2F);
-        break;
+        break; 
       default:
         priorityColor = Colors.grey;
         break;
@@ -243,13 +257,12 @@ class _TaskItemState extends State<TaskItem> {
           context,
           MaterialPageRoute(
             builder: (context) => AddEditScreen(task: widget.task),
+           
           ),
         );
       },
-      onLongPress: () {
-        final repository =
-            Provider.of<Repository<Task>>(context, listen: false);
-        repository.delete(widget.task);
+      onLongPress: (){
+        widget.task.delete();
       },
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
@@ -366,26 +379,29 @@ class CheckBox extends StatelessWidget {
   }
 }
 
-class EmptyState extends StatelessWidget {
+class EmptyState extends StatelessWidget{
   const EmptyState({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        const SizedBox(
-          height: 140,
-        ),
-        Center(
-            child: Image.asset(
-          'assets/images/empty.png',
-          scale: 5,
-        )),
-        const Text(
-          'No tasks found.',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-      ],
-    );
+   return  Builder(
+     builder: (context) {
+       return SingleChildScrollView(
+         child: Column(
+          children: [
+            const SizedBox(height: 140,),
+            Center(
+              
+              child: Image.asset('assets/images/empty.png',scale: 5,)),
+            const Text(
+              'No tasks found.',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+           
+          ],
+         ),
+       );
+     }
+   );
   }
 }

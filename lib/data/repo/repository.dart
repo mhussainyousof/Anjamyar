@@ -1,43 +1,43 @@
 import 'package:flutter/material.dart';
-import 'package:todolist/data/repo/source/source.dart';
+import 'package:todolist/data/source/source.dart';
 
-class Repository<T> extends ChangeNotifier implements DataSource{
-   final DataSource<T> dataSource;
+class Repository<T> extends ChangeNotifier implements Datasource<T>{
+  final Datasource<T> datasource;
 
-  Repository(this.dataSource); 
+  Repository(this.datasource);
   @override
-  Future<void> createOrUpdate(data)async {
-    final result = await dataSource.createOrUpdate(data);
+  Future<void> delete(T data) async{
+    datasource.delete(data);
     notifyListeners();
-    return result;
   }
 
   @override
-  Future<void> delete(data)async {
-    dataSource.delete(data);
+  Future<void> deleteAll() async{
+   await  datasource.deleteAll();
+     notifyListeners();
+  }
+
+  @override
+  Future<void> deleteById(Id) async{
+   datasource.deleteById(Id);
    notifyListeners();
   }
 
   @override
-  Future<void> deleteAll()async {
-     await dataSource.deleteAll();
-     notifyListeners();
+  Future<T> findById(Id) {
+    return datasource.findById(Id);
   }
 
   @override
-  Future<void> deleteBy(Id)async {
-     dataSource.deleteBy(Id); 
-     notifyListeners();
+  Future<List<T>> getAll({String searchKeyword = ''}) {
+    return datasource.getAll(searchKeyword: searchKeyword);
   }
 
   @override
-  Future findById(Id) {
-   return dataSource.findById(Id);
-  }
-
-  @override
-  Future<List<T>> getAll({String searchKeword = ''}) {
-    return dataSource.getAll(searchKeword:searchKeword);
+  Future<T> updateOrCreate(T data)async {
+      final T result = await datasource.updateOrCreate(data);
+      notifyListeners();
+      return result;
   }
 
 }

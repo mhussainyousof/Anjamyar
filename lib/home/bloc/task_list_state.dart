@@ -5,19 +5,14 @@ sealed class TaskListState {}
 
 final class TaskListInitial extends TaskListState {}
 
-final class TaskListLoading extends TaskListState {}
+class TaskListLoading extends TaskListState {}
 
-final class TaskListLoaded extends TaskListState {
-final List<Task> items;
-
-  TaskListLoaded(this.items);
-
-}
-
-class TaskListEmpty extends TaskListState{}
+class TaskListSuccess extends TaskListState {
+  final List<Task> items;
+  TaskListSuccess(this.items);}
 
 class TaskListError extends TaskListState {
   final String errorMessage;
+TaskListError(this.errorMessage);}
 
-  TaskListError({required this.errorMessage});
-}
+class TaskListEmpty extends TaskListState {}
